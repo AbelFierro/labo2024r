@@ -11,21 +11,21 @@ require("lightgbm")
 # defino los parametros de la corrida, en una lista, la variable global  PARAM
 #  muy pronto esto se leera desde un archivo formato .yaml
 PARAM <- list()
-PARAM$experimento <- "KA4540Libre"
+PARAM$experimento <- "KA4540"
 
 PARAM$input$dataset <- "./datasets/dataset_pequeno.csv"
 PARAM$input$training <- c(202107) # meses donde se entrena el modelo
 PARAM$input$future <- c(202109) # meses donde se aplica el modelo
 
 
-PARAM$finalmodel$num_iterations <- 614
-PARAM$finalmodel$learning_rate <- 0.013495214722645
-PARAM$finalmodel$feature_fraction <- 0.546186303431832
-PARAM$finalmodel$min_data_in_leaf <- 737
-PARAM$finalmodel$num_leaves <- 765
+PARAM$finalmodel$num_iterations <- 559
+PARAM$finalmodel$learning_rate <- 0.0100746999
+PARAM$finalmodel$feature_fraction <- 0.5144127527
+PARAM$finalmodel$min_data_in_leaf <- 505
+PARAM$finalmodel$num_leaves <- 44
 
 
-PARAM$finalmodel$max_bin <- 28
+PARAM$finalmodel$max_bin <- 31
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -89,11 +89,6 @@ modelo <- lgb.train(
     num_leaves = PARAM$finalmodel$num_leaves,
     min_data_in_leaf = PARAM$finalmodel$min_data_in_leaf,
     feature_fraction = PARAM$finalmodel$feature_fraction,
-    max_depth=12,
-    is_unbalance = "true",
-    lambda_l1 = 0.1,          # Regularización L1
-    lambda_l2 = 0.2,          # Regularización L2
-    min_gain_to_split = 0.08,  # Ganancia mínima para dividir
     seed = ksemilla_azar
   )
 )

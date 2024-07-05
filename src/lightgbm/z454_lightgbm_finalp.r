@@ -1,5 +1,8 @@
 # para correr el Google Cloud
+#str(dataset)
+#unique(dataset$cdescubierto_preacordado)
 
+#summary(dataset$cdescubierto_preacordado)
 # limpio la memoria
 rm(list = ls()) # remove all objects
 gc() # garbage collection
@@ -11,21 +14,21 @@ require("lightgbm")
 # defino los parametros de la corrida, en una lista, la variable global  PARAM
 #  muy pronto esto se leera desde un archivo formato .yaml
 PARAM <- list()
-PARAM$experimento <- "KA4540Libre"
+PARAM$experimento <- "KA4540libre"
 
 PARAM$input$dataset <- "./datasets/dataset_pequeno.csv"
 PARAM$input$training <- c(202107) # meses donde se entrena el modelo
 PARAM$input$future <- c(202109) # meses donde se aplica el modelo
 
 
-PARAM$finalmodel$num_iterations <- 614
-PARAM$finalmodel$learning_rate <- 0.013495214722645
-PARAM$finalmodel$feature_fraction <- 0.546186303431832
-PARAM$finalmodel$min_data_in_leaf <- 737
-PARAM$finalmodel$num_leaves <- 765
+PARAM$finalmodel$num_iterations <- 494
+PARAM$finalmodel$learning_rate <- 0.0282258437645638
+PARAM$finalmodel$feature_fraction <- 0.563179281580818
+PARAM$finalmodel$min_data_in_leaf <- 1302
+PARAM$finalmodel$num_leaves <- 875
 
 
-PARAM$finalmodel$max_bin <- 28
+PARAM$finalmodel$max_bin <- 31
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -39,7 +42,7 @@ ksemilla_azar <- tabla_semillas[ 1, semilla ]  # 1 es mi primer semilla
 
 # cargo el dataset donde voy a entrenar
 dataset <- fread(PARAM$input$dataset, stringsAsFactors = TRUE)
-
+dataset$cdescubierto_preacordado <- as.factor(dataset$cdescubierto_preacordado)
 
 #--------------------------------------
 
@@ -83,17 +86,17 @@ modelo <- lgb.train(
   data = dtrain,
   param = list(
     objective = "binary",
+    #boosting = "gbdt",
+    #n_estimators = 100,
     max_bin = PARAM$finalmodel$max_bin,
     learning_rate = PARAM$finalmodel$learning_rate,
     num_iterations = PARAM$finalmodel$num_iterations,
     num_leaves = PARAM$finalmodel$num_leaves,
     min_data_in_leaf = PARAM$finalmodel$min_data_in_leaf,
     feature_fraction = PARAM$finalmodel$feature_fraction,
-    max_depth=12,
-    is_unbalance = "true",
-    lambda_l1 = 0.1,          # Regularización L1
-    lambda_l2 = 0.2,          # Regularización L2
-    min_gain_to_split = 0.08,  # Ganancia mínima para dividir
+    categorical_features= dataset$cdescubierto_preacordado,
+    Is_unbalance = "True",
+    #metric = "binary_logloss",
     seed = ksemilla_azar
   )
 )
@@ -143,16 +146,18 @@ setorder(tb_entrega, -prob)
 # si la palabra inteligentemente no le significa nada aun
 # suba TODOS los archivos a Kaggle
 # espera a la siguiente clase sincronica en donde el tema sera explicado
+#10670
+#cortes <- seq(8000, 12000, by = 500)
 
-cortes <- seq(8000, 12000, by = 500)
-for (envios in cortes) {
-  tb_entrega[, Predicted := 0L]
-  tb_entrega[1:envios, Predicted := 1L]
+#for (envios in cortes) {
+envios=11500
+tb_entrega[, Predicted := 0L]
+tb_entrega[1:envios, Predicted := 1L]
 
-  fwrite(tb_entrega[, list(numero_de_cliente, Predicted)],
-    file = paste0(PARAM$experimento, "_", envios, ".csv"),
-    sep = ","
-  )
-}
+fwrite(tb_entrega[, list(numero_de_cliente, Predicted)],
+file = paste0(PARAM$experimento, "_", envios, ".csv"),
+sep = ","
+)
+#}
 
 cat("\n\nLa generacion de los archivos para Kaggle ha terminado\n")
